@@ -1,0 +1,12 @@
+
+<body>
+<script src=jsdb.js></script>
+<script>
+document.write(JSDB.VERSION);
+JSDB.push({name:"john",age:"12"});
+JSDB.push({name:"Mary",age:"13"});
+JSDB.push({name:"Fred",age:"12"});
+JSDB.addIndex("age");
+console.log(JSDB.find({age:"12"}));
+</script>
+</body>
