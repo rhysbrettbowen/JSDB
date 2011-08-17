@@ -1,5 +1,6 @@
 (function(global) {
 
+  //give JSDB a name, this will be used when saving to local storage
   var JSDB = function(DBname){
 
   var data = [];
@@ -7,24 +8,27 @@
 
   this.getName = function(){return DBname};
 
+  //todo: when adding data update the index
   this.push = function(obj){data.push(obj);};
 
+  //todo: add deep indexes, compund indexes and async index computing with webworkers
   this.addIndex = function(name){
     if(index[name]) return false;
     var len = data.length;
     var indexObj = {};
     for(var i = 0; i < len; i++){
-      if(data[i][name]){
-        if(indexObj[data[i][name]])
-          indexObj[data[i][name]].push(i);
+      if(var din = data[i][name]){
+        if(indexObj[din])
+          indexObj[din].push(i);
         else
-          indexObj[data[i][name]]=[i];
+          indexObj[din]=[i];
       }
     }
     index[name] = indexObj;
     return true;
   };
 
+  //save data to localstorage, option to save the indexes as well
   this.save = function(saveIndex){
     try{
 	  if('localStorage' in window && window['localStorage'] !== null){
@@ -38,6 +42,7 @@
     return false;
   };
 
+  //load data and indexes from localstorage
   this.load = function(){
     try{
 	  if('localStorage' in window && window['localStorage'] !== null){
@@ -51,7 +56,8 @@
 
   this.getById = function(num){return data[num];};
 
-  this.find = function(obj,num){
+  //find obj can have multiple keys for AND condition, and have multiple values in an array, num is the number to return, offset where to start in the return
+  this.find = function(obj,num,offset){
     var key;
     var result = {};
     var resIndex = [];
@@ -90,7 +96,7 @@
         resIndex = check;
       }
     }
-    for(i=0,l=Math.min(resIndex.length,(num||Infinity));i<l;i++){
+    for(i=(offset||0),l=Math.min(resIndex.length,(num||Infinity)+(offset||0));i<l;i++){
       result[resIndex[i]] = data[resIndex[i]];
     }
     return result;
@@ -99,8 +105,9 @@
 
   };
 
-  JSDB.VERSION = '0.0.6';
+  JSDB.VERSION = '0.1.1';
 
+  //utility function
   JSDB.isIn = function(item, arr){
     var len = arr.length;
     for(var i = 0; i < len; i++){
