@@ -1,19 +1,105 @@
 (function(global) {
-  data = {
-    data: []
+
+  var JSDB = function(DBname){
+
+  var data = [];
+  var index = {};
+
+  this.getName = function(){return DBname};
+
+  this.push = function(obj){data.push(obj);};
+
+  this.addIndex = function(name){
+    if(index[name]) return false;
+    var len = data.length;
+    var indexObj = {};
+    for(var i = 0; i < len; i++){
+      if(data[i][name]){
+        if(indexObj[data[i][name]])
+          indexObj[data[i][name]].push(i);
+        else
+          indexObj[data[i][name]]=[i];
+      }
+    }
+    index[name] = indexObj;
+    return true;
   };
 
-  index = {
-    names: [],
-    indexes: []
-  }
-
-  function JSDB() {
+  this.save = function(saveIndex){
+    try{
+	  if('localStorage' in window && window['localStorage'] !== null){
+	    localStorage.setItem("JSDB."+DBname,JSON.stringify(data));
+	    if(saveIndex){
+	      localStorage.setItem("JSDB.index."+DBname,JSON.stringify(index));
+	    }
+	    return true;
+	  }
+	}catch(e){}
+    return false;
   };
 
-  JSDB.push = function(obj){
-    data.data.push(obj);
+  this.load = function(){
+    try{
+	  if('localStorage' in window && window['localStorage'] !== null){
+	    data = JSON.parse(localStorage.getItem("JSDB."+DBname));
+	    index = JSON.parse(localStorage.getItem("JSDB.index"+DBname));
+	    return true;
+	  }
+	}catch(e){}
+    return false;
   };
+
+  this.getById = function(num){return data[num];};
+
+  this.find = function(obj,num){
+    var key;
+    var result = {};
+    var resIndex = [];
+    var temp;
+    var check;
+    var indResult;
+    var indRR;
+    var ok;
+    var init = true;
+    for(key in obj){
+      if(!(obj[key] instanceof Array))
+        ok = [obj[key]];
+      else
+        ok = obj[key];
+      if(init){
+        for(var i=0,l=ok.length;i<l;i++){
+          if((indResult = index[key])&&(indRR = indResult[ok[i]])){
+            resIndex = resIndex.concat(indRR);
+          }
+        }
+        init = false;
+      }
+      else{
+        temp = [];
+        for(i=0,l=ok.length;i<l;i++){
+		  if((indResult = index[key])&&(indRR = indResult[ok[i]])){
+		     temp = temp.concat(indRR);
+		   }
+        }
+        check = [];
+        for(i=0,l=temp.length;i<l;i++){
+          if(JSDB.isIn(temp[i],resIndex)>-1){
+            check.push(temp[i]);
+          }
+        }
+        resIndex = check;
+      }
+    }
+    for(i=0,l=Math.min(resIndex.length,(num||Infinity));i<l;i++){
+      result[resIndex[i]] = data[resIndex[i]];
+    }
+    return result;
+  };
+
+
+  };
+
+  JSDB.VERSION = '0.0.6';
 
   JSDB.isIn = function(item, arr){
     var len = arr.length;
@@ -25,42 +111,6 @@
     return -1;
   };
 
-  JSDB.addIndex = function(name){
-    if(JSDB.isIn(name, index.names)>-1) return false;
-    var len = data.data.length;
-    var indexObj = {};
-    for(var i = 0; i < len; i++){
-      if(data.data[i][name]){
-        if(indexObj[data.data[i][name]])
-          indexObj[data.data[i][name]].push(i);
-        else
-          indexObj[data.data[i][name]]=[i];
-      }
-    }
-    index.names.push(name);
-    index.indexes.push(indexObj);
-    return true;
-  };
-  
-  JSDB.find = function(obj){
-    var key;
-    var result = [];
-    var indResult;
-    for(key in obj){
-      indTest = JSDB.isIn(key, index.names);
-      if(indTest>-1){
-        if(indResult = index.indexes[indTest][obj[key]]){
-          for(var n = indResult.length-1; n>=0; n--){
-            result.push(data.data[indResult[n]]);
-          }
-        }
-      }
-    }
-    return result;
-  };
-
-  JSDB.VERSION = '0.0.1'; 
-  
   if (global.JSDB) {
     throw new Error('JSDB already exists');
   } else {

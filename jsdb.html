@@ -1,12 +1,24 @@
-
 <body>
-<script src=jsdb.js></script>
+<script src=jsdb-min.js></script>
 <script>
 document.write(JSDB.VERSION);
-JSDB.push({name:"john",age:"12"});
-JSDB.push({name:"Mary",age:"13"});
-JSDB.push({name:"Fred",age:"12"});
-JSDB.addIndex("age");
-console.log(JSDB.find({age:"12"}));
+myDB = new JSDB("test");
+myDB.push({name:"john",age:"12"});
+myDB.push({name:"Mary",age:"13"});
+myDB.push({name:"Fred",age:"12",last:"George"});
+myDB.push({name:"Fred",age:"13",last:"Poppins"});
+myDB.push({name:"Fred",age:"12",last:"Scott"});
+myDB.push({name:"Fred",age:"15",last:"Scott"});
+myDB.addIndex("age");
+myDB.addIndex("name");
+myDB.save(true);
+myDB2 = new JSDB("test2");
+myDB2.push({name:"john",age:"12"});
+myDB2.push({name:"Mary",age:"13"});
+myDB2.push({name:"Fred",age:"12",last:"George"});
+myDB2.addIndex("age");
+console.log(myDB.find({age:["12","13"],name:"Fred"}));
+console.log(myDB.find({age:["12","13"],name:"Fred"},1));
+console.log(myDB2.find({age:["12"]}));
 </script>
 </body>
