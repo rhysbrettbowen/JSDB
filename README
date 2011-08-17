@@ -1,4 +1,6 @@
 
 see the HTML for use, an index must be created on a search and a find accepts an object with the key to search on and the value to find and returns an array of the objects
 
+comments added to jsdb.js and more examples in jsdb.html
 
+can save and load from localstorage
