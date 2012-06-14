@@ -5,6 +5,7 @@
 
   var data = [];
   var index = {};
+  var din;
 
   this.getName = function(){return DBname};
 
@@ -17,7 +18,7 @@
     var len = data.length;
     var indexObj = {};
     for(var i = 0; i < len; i++){
-      if(var din = data[i][name]){
+      if(din = data[i][name]){
         if(indexObj[din])
           indexObj[din].push(i);
         else
